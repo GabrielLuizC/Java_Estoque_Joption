@@ -1,6 +1,7 @@
 package DAO;
 
 import Model.Estoque;
+import Connection.ConnectionFactory;
 
 import java.sql.*;
 import java.text.ParseException;
@@ -8,6 +9,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EstoqueDAO {
+
+    private Connection connection;
+
+    public EstoqueDAO() {
+        this.connection = new ConnectionFactory().getConnection();
+        verificaBanco();
+    }
+
+    public void verificaBanco(){
+        String sql = "CREATE TABLE IF NOT EXISTS insumos (" +
+                "idInsumo INT PRIMARY KEY AUTO_INCREMENT," +
+                "nomeInsumo VARCHAR(255) UNIQUE NOT NULL," +
+                "qntInsumo INT NOT NULL," +
+                "precoInsumo DOUBLE," +
+                "dataValidade VARCHAR(255)" +
+                ");";
+        try {
+            PreparedStatement stmt = connection.prepareStatement(sql);
+
+            stmt.execute();
+            stmt.close();
+            
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public static void cadastrarEstoque(Estoque estoque) throws ParseException{
         try{
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/estoque", "root", "");
@@ -33,8 +60,6 @@ public class EstoqueDAO {
     public List<Estoque> listarBanco(){
         List<Estoque> estoqueList = new ArrayList<>();
         try {
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/estoque", "root", "");
-
             Statement statement = connection.createStatement();
 
             ResultSet resultSet = statement.executeQuery("select * from insumos");
